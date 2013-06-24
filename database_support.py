@@ -1,5 +1,6 @@
 import os
 from xml.etree.cElementTree import ElementTree
+import locale
 import logging
 
 COUNTRY_CODES_PATH = '/usr/share/zoneinfo/iso3166.tab'
@@ -25,6 +26,25 @@ def has_providers_db():
                           elem.get('format'))
             return False
         return True
+
+
+class CountryListStore:
+    """ISO 3166 country codes"""
+    # TODO: Best way to find current country?
+    COUNTRY_CODE = locale.getdefaultlocale()[0][3:5].lower()
+
+    def __init__(self):
+        pass
+        # Load dict from COUNTRY_CODES_PATH
+        # ...
+
+
+class ProviderListStore:
+    pass
+
+
+class PlanListStore:
+    pass
 
 
 def main():

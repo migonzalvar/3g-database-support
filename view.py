@@ -2,6 +2,60 @@
 from gi.repository import Gtk
 
 
+class Plan(list):
+    @property
+    def apn(self):
+        return "www.example.com"
+
+class Provider(object):
+    def __init__(self, name):
+        self.name = name
+
+    @property
+    def plans(self):
+        plan_store = Gtk.ListStore(str, object)
+        for plan in plans[self.name]:
+            plan_store.append([plan, Plan(plan)])
+        return plan_store
+
+class Country(object):
+    def __init__(self, name):
+        self.name = name
+
+    @property
+    def providers(self):
+        provider_store = Gtk.ListStore(str, object)
+        for provider in providers[self.name]:
+            provider_store.append([provider, Provider(provider)])
+        return provider_store
+
+plans = {
+    'Aaa': ['morning', 'afternoon'],
+    'Bbb': ['S', 'XL'],
+    'Zzz': ['base', 'red'],
+    'Yyy': ['combo', 'multi'],
+    '123': ['prepaid', 'postpaid'],
+    '987': ['basic', 'premium'],
+}
+
+providers = {
+    "Austria": ["Aaa", "Bbb"],
+    "Brazil": ["Zzz", "Yyy"],
+    "Belgium": ["123", "987"],
+}
+
+countries = [
+    Country("Austria"),
+    Country("Brazil"),
+    Country("Belgium"),
+]
+
+class CountryListStore(Gtk.ListStore):
+    def __init__(self, *args, **kwargs):
+        Gtk.ListStore.__init__(self, str, object)
+        for country in countries:
+            self.append([country.name, country])
+
 
 class MyWindow(Gtk.Window):
 
@@ -17,12 +71,7 @@ class MyWindow(Gtk.Window):
         self._upper_box.show()
 
         # FIXME: refactor to use model
-        country_store = Gtk.ListStore(str)
-        countries = ["Austria", "Brazil", "Belgium", "France", "Germany",
-                     "Switzerland", "United Kingdom", "United States of America",
-                     "Uruguay"]
-        for country in countries:
-            country_store.append([country])
+        country_store = CountryListStore()
 
         provider_store = Gtk.ListStore(str)
         provider_store.append([])
@@ -39,19 +88,21 @@ class MyWindow(Gtk.Window):
         # TODO: country_combo.set_active(country_store.guess_country_row())
         main_box.pack_start(country_combo, True, True, 0)
 
-        provider_combo = Gtk.ComboBox()
-        provider_combo.set_model(provider_store)
-        provider_combo.connect("changed", self._provider_selected_cb)
+        self.provider_combo = Gtk.ComboBox()
+        self.provider_combo.set_model(provider_store)
+        self.provider_combo.connect("changed", self._provider_selected_cb)
         renderer_text = Gtk.CellRendererText()
-        provider_combo.pack_start(renderer_text, True)
-        main_box.pack_start(provider_combo, True, True, 0)
+        self.provider_combo.pack_start(renderer_text, True)
+        self.provider_combo.add_attribute(renderer_text, "text", 0)
+        main_box.pack_start(self.provider_combo, True, True, 0)
 
-        plan_combo = Gtk.ComboBox()
-        plan_combo.set_model(plan_store)
-        plan_combo.connect("changed", self._plan_selected_cb)
+        self.plan_combo = Gtk.ComboBox()
+        self.plan_combo.set_model(plan_store)
+        self.plan_combo.connect("changed", self._plan_selected_cb)
         renderer_text = Gtk.CellRendererText()
-        plan_combo.pack_start(renderer_text, True)
-        main_box.pack_start(plan_combo, True, True, 0)
+        self.plan_combo.pack_start(renderer_text, True)
+        self.plan_combo.add_attribute(renderer_text, "text", 0)
+        main_box.pack_start(self.plan_combo, True, True, 0)
 
         # label = gtk.Label(_('Country:'))
         # label.set_alignment(1, 0.5)
@@ -122,23 +173,29 @@ class MyWindow(Gtk.Window):
         tree_iter = combo.get_active_iter()
         if tree_iter is not None:
             model = combo.get_model()
-            country = model[tree_iter][0]
-            print "Selected: country=%s" % country
-            # TODO: Update provider model
+            country = model[tree_iter][1]
+            self.provider_combo.set_model(country.providers)
+            self.provider_combo.set_active(0)
+            print "Selected: country=%s" % country.name
+            # TODO: Update provider model and plan
 
     def _provider_selected_cb(self, combo):
         tree_iter = combo.get_active_iter()
         if tree_iter is not None:
             model = combo.get_model()
-            provider = model[tree_iter]
+            provider = model[tree_iter][1]
+            self.plan_combo.set_model(provider.plans)
+            self.plan_combo.set_active(0)
+            print "Selected: provider=%s" % provider.name
         # TODO: Update plan model
 
     def _plan_selected_cb(self, combo):
         tree_iter = combo.get_active_iter()
         if tree_iter is not None:
             model = combo.get_model()
-            plan = model[tree_iter]
-        # TODO: Change detailed values
+            plan = model[tree_iter][1]
+            print "Selected: apn=%s" % plan.apn
+        # TODO: Populate entries except PIN
 
 
 win = MyWindow()
