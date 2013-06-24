@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from gi.repository import Gtk
 
 from modemconfiguration.view import MyWindow
