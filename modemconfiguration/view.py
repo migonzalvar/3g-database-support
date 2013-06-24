@@ -153,9 +153,3 @@ class MyWindow(Gtk.Window):
             plan = model[tree_iter][1]
             print "Selected: apn=%s" % plan.apn
         # TODO: Populate entries except PIN
-
-
-win = MyWindow(model)
-win.connect("delete-event", Gtk.main_quit)
-win.show_all()
-Gtk.main()
