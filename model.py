@@ -1,5 +1,28 @@
 from gi.repository import Gtk
 
+from .config import GSM_COUNTRY_PATH, GSM_PROVIDERS_PATH, GSM_PLAN_PATH
+
+
+def get_initial_rows():
+    return 2, 1, 0
+
+
+def get_initial_country():
+    # Check if persisted throw GConf GSM_COUNTRY_PATH
+    # If not guess using locale.getdefaultlocale()[0][3:5].lower()
+    return 2
+
+
+def get_initial_provider():
+    # Check if persisted throw GConf GSM_PROVIDERS_PATH
+    return 1
+
+
+def get_initial_plan():
+    # Check if persisted throw GConf GSM_PLAN_PATH
+    return 0
+
+
 class Plan(list):
     @property
     def apn(self):
