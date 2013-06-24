@@ -1,7 +1,5 @@
 from gi.repository import Gtk
 
-import model
-
 
 class MyWindow(Gtk.Window):
 
