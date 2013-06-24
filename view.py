@@ -28,14 +28,13 @@ class MyWindow(Gtk.Window):
         plan_store = Gtk.ListStore(str)
         plan_store.append([])
 
-        country_combo = Gtk.ComboBox()
-        country_combo.set_model(country_store)
-        country_combo.connect("changed", self._country_selected_cb)
+        self.country_combo = Gtk.ComboBox()
+        self.country_combo.set_model(country_store)
+        self.country_combo.connect("changed", self._country_selected_cb)
         renderer_text = Gtk.CellRendererText()
-        country_combo.pack_start(renderer_text, True)
-        country_combo.add_attribute(renderer_text, "text", 0)
-        # TODO: country_combo.set_active(country_store.guess_country_row())
-        main_box.pack_start(country_combo, True, True, 0)
+        self.country_combo.pack_start(renderer_text, True)
+        self.country_combo.add_attribute(renderer_text, "text", 0)
+        main_box.pack_start(self.country_combo, True, True, 0)
 
         self.provider_combo = Gtk.ComboBox()
         self.provider_combo.set_model(provider_store)
@@ -114,8 +113,17 @@ class MyWindow(Gtk.Window):
         self.button.connect("clicked", self.on_button_clicked)
         main_box.pack_start(self.button, True, True, 0)
 
+        self.setup()
+
     def on_button_clicked(self, widget):
         print "Hello World"
+
+    def setup(self):
+        country_row, provider_row, plan_row = self._model.get_initial_rows()
+        # TODO: Disable cb on change
+        self.country_combo.set_active(country_row)
+        self.provider_combo.set_active(provider_row)
+        self.plan_combo.set_active(plan_row)
 
     def _country_selected_cb(self, combo):
         print "Country changed"
