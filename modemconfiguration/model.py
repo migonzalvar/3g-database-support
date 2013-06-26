@@ -159,7 +159,6 @@ class ServiceProvidersDatabase(object):
         return self._providers
 
     def _update_plans(self):
-        import pdb; pdb.set_trace()
         self._plans = []
         for idx, apn_el in enumerate(self._get_plan_elements()):
             name_tag = self._get_localized_or_default_name(apn_el)
