@@ -178,8 +178,11 @@ class ServiceProvidersDatabase(object):
     def get_plans(self):
         return self._plans
 
-    def get_settings(self):
-        pass
+    def get_provider(self):
+        return self._providers[self._current_provider]
+
+    def get_plan(self):
+        return self._plans[self._current_plan]
 
 
 class Plan2(list):
