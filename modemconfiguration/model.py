@@ -132,7 +132,9 @@ class ServiceProvidersDatabase(object):
 
     def _get_provider_element(self):
         idx = self._current_provider
-        return self._get_country_element().find('.//provider[%s]' % idx)
+        # Warning! XPath index begins with 1
+        return self._get_country_element().find('.//provider[%s]'
+                                                % (int(idx) + 1))
 
     def _get_plan_elements(self):
         return self._get_provider_element().findall('.//apn')
