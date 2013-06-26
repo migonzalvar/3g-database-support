@@ -77,19 +77,22 @@ class ServiceProvidersDatabase(object):
                 codes[code.lower()] = name.strip()
 
         # Populate countries list
-        self._countries, _country_codes = [], []
+        self._countries, self._current_country = [], 0
+        country_codes = []
         for idx, country in enumerate(self.root.iter('country')):
             country_code = country.attrib['code']
             country = Country(idx, country_code, codes[country_code])
             self._countries.append(country)
-            _country_codes.append(country_code)
+            country_codes.append(country_code)
 
         # FIXME: Use value persisted in GConf or guess using locale
-        country_idx = _country_codes.index(self.COUNTRY_CODE)
+        country_idx = country_codes.index(self.COUNTRY_CODE)
         self.set_country(country_idx)
         # FIXME: Use value persisted in GConf or first
+        self._providers, self._current_provider = [], 0
         self.set_provider(0)
         # FIXME: Use value persisted in GConf or first
+        self._plans, self._current_plan = [], 0
         self.set_plan(0)
 
     def set_country(self, idx):
@@ -104,7 +107,7 @@ class ServiceProvidersDatabase(object):
         self._current_plan = idx
 
     def _get_country_element(self):
-        return self.root.find('country[%s]' % (self._current_country +1))
+        return self.root.find('country[%s]' % (self._current_country + 1))
 
     def _get_providers_elements(self):
         return self._get_country_element().findall('provider')
