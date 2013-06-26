@@ -1,6 +1,16 @@
 from gi.repository import Gtk
 
 
+from .model import ServiceProviderDatabaseError
+
+
+def list_filler(gtk_list, iterable, unpacker=lambda x: (x.name, x)):
+    gtk_list.clear()
+    for i in iterable:
+        gtk_list.append(unpacker(i))
+    return gtk_list
+
+
 class MyWindow(Gtk.Window):
 
     def __init__(self, model):
@@ -16,10 +26,10 @@ class MyWindow(Gtk.Window):
         main_box.pack_start(self._upper_box, True, True, 0)
         self._upper_box.show()
 
-        # FIXME: refactor to use model
-        country_store = model.CountryListStore()
+        country_store = Gtk.ListStore(str, object)
+        country_store.append([])
 
-        provider_store = Gtk.ListStore(str)
+        provider_store = Gtk.ListStore(str, object)
         provider_store.append([])
 
         plan_store = Gtk.ListStore(str)
@@ -49,104 +59,47 @@ class MyWindow(Gtk.Window):
         self.plan_combo.add_attribute(renderer_text, "text", 0)
         main_box.pack_start(self.plan_combo, True, True, 0)
 
-        # label = gtk.Label(_('Country:'))
-        # label.set_alignment(1, 0.5)
-        # label_group.add_widget(label)
-        # box.pack_start(label, False)
-        # label.show()
-        # country_store = model.CountryListStore()
-        # country_combo = gtk.ComboBox(country_store)
-        # combo_group.add_widget(country_combo)
-        # cell = gtk.CellRendererText()
-        # cell.props.xalign = 0.5
-        # country_combo.pack_start(cell)
-        # country_combo.add_attribute(cell, 'text', 0)
-        # country_combo.connect('changed', self.__country_selected_cb)
-        # box.pack_start(country_combo, False)
-        # country_combo.show()
-        # self._upper_box.pack_start(box, False)
-        # box.show()
-
-        # box = gtk.HBox(spacing=style.DEFAULT_SPACING * 2)
-        # label = gtk.Label(_('Provider:'))
-        # label.set_alignment(1, 0.5)
-        # label_group.add_widget(label)
-        # box.pack_start(label, False)
-        # label.show()
-        # self._providers_combo = gtk.ComboBox()
-        # combo_group.add_widget(self._providers_combo)
-        # cell = gtk.CellRendererText()
-        # cell.props.xalign = 0.5
-        # self._providers_combo.pack_start(cell)
-        # self._providers_combo.add_attribute(cell, 'text', 0)
-        # self._providers_combo.connect('changed',
-        #                               self.__provider_selected_cb)
-        # box.pack_start(self._providers_combo, False)
-        # self._providers_combo.show()
-        # self._upper_box.pack_start(box, False)
-        # box.show()
-
-        # box = gtk.HBox(spacing=style.DEFAULT_SPACING*2)
-        # label = gtk.Label(_('Plan:'))
-        # label.set_alignment(1, 0.5)
-        # label_group.add_widget(label)
-        # box.pack_start(label, False)
-        # label.show()
-        # self._plan_combo = gtk.ComboBox()
-        # combo_group.add_widget(self._plan_combo)
-        # cell = gtk.CellRendererText()
-        # cell.props.xalign = 0.5
-        # self._plan_combo.pack_start(cell)
-        # self._plan_combo.add_attribute(cell, 'text', 0)
-        # self._plan_combo.connect('changed', self.__plan_selected_cb)
-        # box.pack_start(self._plan_combo, False)
-        # self._plan_combo.show()
-        # self._upper_box.pack_start(box, False)
-        # box.show()
-
-        # country_combo.set_active(country_store.guess_country_row())
-
-        self.button = Gtk.Button(label="Click Here")
-        self.button.connect("clicked", self.on_button_clicked)
-        main_box.pack_start(self.button, True, True, 0)
-
-        self.setup()
-
-    def on_button_clicked(self, widget):
-        print "Hello World"
-
-    def setup(self):
-        country_row, provider_row, plan_row = self._model.get_initial_rows()
-        # TODO: Disable cb on change
-        self.country_combo.set_active(country_row)
-        self.provider_combo.set_active(provider_row)
-        self.plan_combo.set_active(plan_row)
+        try:
+            self.db_manager = self._model.ServiceProvidersDatabase()
+        except ServiceProviderDatabaseError:
+            self.db_manager = None
+        else:
+            countries = self.db_manager.get_countries()
+            list_filler(country_store, countries)
+            current_country = self.db_manager.get_country()
+            self.country_combo.set_model(country_store)
+            self.country_combo.set_active(current_country.idx)
 
     def _country_selected_cb(self, combo):
-        print "Country changed"
         tree_iter = combo.get_active_iter()
         if tree_iter is not None:
             model = combo.get_model()
             country = model[tree_iter][1]
-            self.provider_combo.set_model(country.providers)
-            self.provider_combo.set_active(0)
+            self.db_manager.set_country(country.idx)
+            providers = self.db_manager.get_providers()
+            store = list_filler(Gtk.ListStore(str, object), providers)
+            current = self.db_manager.get_provider()
+            self.provider_combo.set_model(store)
+            self.provider_combo.set_active(current.idx)
             print "Selected: country=%s" % country.name
-            # TODO: Update provider model and plan
 
     def _provider_selected_cb(self, combo):
         tree_iter = combo.get_active_iter()
         if tree_iter is not None:
             model = combo.get_model()
             provider = model[tree_iter][1]
-            self.plan_combo.set_model(provider.plans)
-            self.plan_combo.set_active(0)
+            self.db_manager.set_provider(provider.idx)
+            plans = self.db_manager.get_plans()
+            store = list_filler(Gtk.ListStore(str, object), plans)
+            current = self.db_manager.get_plan()
+            self.plan_combo.set_model(store)
+            self.plan_combo.set_active(current.idx)
             print "Selected: provider=%s" % provider.name
-        # TODO: Update plan model
 
     def _plan_selected_cb(self, combo):
         tree_iter = combo.get_active_iter()
         if tree_iter is not None:
             model = combo.get_model()
             plan = model[tree_iter][1]
-            print "Selected: apn=%s" % plan.apn
-        # TODO: Populate entries except PIN
+            print "Selected: apn=%s" % plan.name
+            print "Settings: %s" % plan.__dict__
