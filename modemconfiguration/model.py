@@ -29,7 +29,7 @@ def get_initial_plan():
     return 0
 
 
-class DatabaseError(Exception):
+class ServiceProviderDatabaseError(Exception):
     pass
 
 
@@ -65,7 +65,7 @@ class ServiceProvidersDatabase(object):
             msg = ("Mobile broadband provider database: Country "
                    "codes path %s not found.") % COUNTRY_CODES_PATH
             logging.warning(msg)
-            raise DatabaseError(msg)
+            raise ServiceProviderDatabaseError(msg)
 
         # Check service provider database file exists
         try:
@@ -74,7 +74,7 @@ class ServiceProvidersDatabase(object):
             msg = ("Mobile broadband provider database: Could not read "
                    "provider information %s error=%s") % (PROVIDERS_PATH, e)
             logging.warning(msg)
-            raise DatabaseError(msg)
+            raise ServiceProviderDatabaseError(msg)
 
         # Check service provider da
         self.root = tree.getroot()
@@ -82,7 +82,7 @@ class ServiceProvidersDatabase(object):
             msg = ("Mobile broadband provider database: Could not "
                    "read provider information. Wrong format.")
             logging.warning(msg)
-            raise DatabaseError(msg)
+            raise ServiceProviderDatabaseError(msg)
 
         language_code = locale.getdefaultlocale()[0]
         self.COUNTRY_CODE = language_code[3:5].lower()
