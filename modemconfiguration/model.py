@@ -99,22 +99,23 @@ class ServiceProvidersDatabase(object):
                 codes[code.lower()] = name.strip()
 
         # Populate countries list
-        self.countries = []
+        self._countries, _country_codes = [], []
         for idx, country in enumerate(self.root.iter('country')):
             country_code = country.attrib['code']
             country = Country(idx, country_code, codes[country_code])
-            self.countries.append(country)
+            self._countries.append(country)
+            _country_codes.append(country_code)
 
         # FIXME: Use value persisted in GConf or guess using locale
-        self.set_country(self.COUNTRY_CODE)
+        country_idx = _country_codes.index(self.COUNTRY_CODE)
+        self.set_country(country_idx)
         # FIXME: Use value persisted in GConf or first
         self.set_provider(0)
         # FIXME: Use value persisted in GConf or first
         self.set_plan(0)
 
-
-    def set_country(self, country_code):
-        self._current_country = country_code
+    def set_country(self, idx):
+        self._current_country = idx
         self._update_providers()
 
     def set_provider(self, idx):
@@ -125,7 +126,7 @@ class ServiceProvidersDatabase(object):
         self._current_plan = idx
 
     def _get_country_element(self):
-        return self.root.find('country[@code="%s"]' % self._current_country)
+        return self.root.find('country[%s]' % (self._current_country +1))
 
     def _get_providers_elements(self):
         return self._get_country_element().findall('provider')
@@ -146,7 +147,7 @@ class ServiceProvidersDatabase(object):
         return el.find('name')
 
     def get_countries(self):
-        return self.countries
+        return self._countries
 
     def _update_providers(self):
         self._providers = []
@@ -177,6 +178,10 @@ class ServiceProvidersDatabase(object):
 
     def get_plans(self):
         return self._plans
+
+
+    def get_country(self):
+        return self._countries[self._current_country]
 
     def get_provider(self):
         return self._providers[self._current_provider]
