@@ -21,6 +21,7 @@ import locale
 import logging
 import os.path
 from xml.etree.cElementTree import ElementTree
+from gettext import gettext as _
 
 from .config import COUNTRY_CODES_PATH, PROVIDERS_PATH, PROVIDERS_FORMAT_SUPPORTED
 # from .config import GSM_COUNTRY_PATH, GSM_PROVIDERS_PATH, GSM_PLAN_PATH
@@ -144,9 +145,13 @@ class ServiceProvidersDatabase(object):
 
     def _get_localized_or_default_name(self, el):
         tag = el.find('name[@%s="%s"]' % (self.LANG_NS_ATTR, self.LANG))
+        if tag is None:
+            tag = el.find('name')
         if tag is not None:
-            return tag
-        return el.find('name')
+            name = tag.text
+        else:
+            name = _('Default')
+        return name
 
     def get_countries(self):
         return self._countries
@@ -154,8 +159,7 @@ class ServiceProvidersDatabase(object):
     def _update_providers(self):
         self._providers = []
         for idx, provider_el in enumerate(self._get_providers_elements()):
-            name_tag = self._get_localized_or_default_name(provider_el)
-            name = name_tag.text
+            name = self._get_localized_or_default_name(provider_el)
             provider = Provider(idx, name)
             self._providers.append(provider)
         return self._providers
@@ -166,12 +170,12 @@ class ServiceProvidersDatabase(object):
     def _update_plans(self):
         self._plans = []
         for idx, apn_el in enumerate(self._get_plan_elements()):
-            name_tag = self._get_localized_or_default_name(apn_el)
+            name = self._get_localized_or_default_name(apn_el)
             username_tag = apn_el.find('username')
             password_tag = apn_el.find('password')
             plan = {
                 'apn': apn_el.get('value'),
-                'name': name_tag.text if name_tag is not None else None,
+                'name': name,
                 'username': username_tag.text if username_tag is not None else None,
                 'password': password_tag.text if password_tag is not None else None,
             }
