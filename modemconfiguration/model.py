@@ -23,8 +23,10 @@ import os.path
 from xml.etree.cElementTree import ElementTree
 from gettext import gettext as _
 
+from gi.repository import GConf
+
 from .config import COUNTRY_CODES_PATH, PROVIDERS_PATH, PROVIDERS_FORMAT_SUPPORTED
-# from .config import GSM_COUNTRY_PATH, GSM_PROVIDERS_PATH, GSM_PLAN_PATH
+from .config import GCONF_SP_COUNTRY, GCONF_SP_PROVIDER, GCONF_SP_PLAN
 
 
 class ServiceProviderDatabaseError(Exception):
@@ -105,15 +107,39 @@ class ServiceProvidersDatabase(object):
             self._countries.append(country)
             country_codes.append(country_code)
 
-        # FIXME: Use value persisted in GConf or guess using locale
-        country_idx = country_codes.index(self.COUNTRY_CODE)
+        country_code, provider_idx, plan_idx = self._get_initials()
+        country_idx = country_codes.index(country_code)
         self.set_country(country_idx)
-        # FIXME: Use value persisted in GConf or first
-        self._providers, self._current_provider = [], 0
-        self.set_provider(0)
-        # FIXME: Use value persisted in GConf or first
-        self._plans, self._current_plan = [], 0
-        self.set_plan(0)
+        self._providers, self._current_provider = [], provider_idx
+        self._update_providers()
+        self._plans, self._current_plan = [], plan_idx
+        self._update_plans()
+
+    def _get_initials(self):
+        client = GConf.Client.get_default()
+        country_code = client.get_string(GCONF_SP_COUNTRY) or self.COUNTRY_CODE
+        provider_name = client.get_string(GCONF_SP_PROVIDER) or ''
+        plan_name = client.get_string(GCONF_SP_PLAN)
+
+        country_el = self.root.find('.//country[@code="%s"]'% country_code)
+        try:
+            provider_idx, provider_el = [
+                (idx, p_el)
+                for idx, p_el in enumerate(country_el.findall('provider'))
+                if p_el.find('name').text == provider_name
+            ][0]
+        except IndexError:
+            provider_idx = 0
+            plan_idx = 0
+        else:
+            plan_names = [self._get_localized_or_default_name(p_el)
+                          for p_el in provider_el.findall('.//apn')]
+            plan_idx = plan_names.index(plan_name)
+
+        return country_code, provider_idx, plan_idx
+
+    def _store_defaults(self):
+        pass
 
     def set_country(self, idx):
         self._current_country = idx
