@@ -139,7 +139,14 @@ class ServiceProvidersDatabase(object):
         return country_code, provider_idx, plan_idx
 
     def _store_defaults(self):
-        pass
+        country_code = self.get_country().code
+        provider_name = self.get_provider().name
+        plan_name = self.get_plan().name
+        print "Saving ", plan_name
+        client = GConf.Client.get_default()
+        client.set_string(GCONF_SP_COUNTRY, country_code)
+        client.set_string(GCONF_SP_PROVIDER, provider_name)
+        client.set_string(GCONF_SP_PLAN, plan_name)
 
     def set_country(self, idx):
         self._current_country = idx
