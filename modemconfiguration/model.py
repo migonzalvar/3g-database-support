@@ -129,7 +129,9 @@ class ServiceProvidersDatabase(object):
         return self.root.find('country[%s]' % (self._current_country + 1))
 
     def _get_providers_elements(self):
-        return self._get_country_element().findall('provider')
+        return [provider
+                for provider in self._get_country_element().findall('provider')
+                if provider.find('.//gsm')]
 
     def _get_provider_element(self):
         idx = self._current_provider
