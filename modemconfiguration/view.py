@@ -128,3 +128,5 @@ class MyWindow(Gtk.Window):
         if tree_iter is not None:
             model = combo.get_model()
             plan = model[tree_iter][1]
+            self.db_manager.set_plan(plan.idx)
+            self.db_manager.save()
