@@ -139,36 +139,24 @@ class ServiceProvidersDatabase(object):
             self._countries.append(country)
             country_codes.append(country_code)
 
-        country_code, provider_idx, plan_idx = self._get_initials()
+        country_code, provider_name, plan_name = self._get_initials()
         country_idx = country_codes.index(country_code)
         self.set_country(country_idx)
-        self._providers, self._current_provider = [], provider_idx
-        self._update_providers()
-        self._plans, self._current_plan = [], plan_idx
-        self._update_plans()
+        for idx, provider_el in enumerate(self._providers):
+            name = _get_localized_or_default_name(provider_el)
+            if provider_name == name:
+                self.set_provider(idx)
+        for idx, plan_el in enumerate(self._plans):
+            name = _get_localized_or_default_name(plan_el)
+            if plan_name == name:
+                self.set_plan(idx)
 
     def _get_initials(self):
         client = GConf.Client.get_default()
         country_code = client.get_string(GCONF_SP_COUNTRY) or self.COUNTRY_CODE
         provider_name = client.get_string(GCONF_SP_PROVIDER) or ''
         plan_name = client.get_string(GCONF_SP_PLAN)
-
-        country_el = self.root.find('.//country[@code="%s"]'% country_code)
-        try:
-            provider_idx, provider_el = [
-                (idx, p_el)
-                for idx, p_el in enumerate(country_el.findall('provider'))
-                if p_el.find('name').text == provider_name
-            ][0]
-        except IndexError:
-            provider_idx = 0
-            plan_idx = 0
-        else:
-            plan_names = [self._get_localized_or_default_name(p_el)
-                          for p_el in provider_el.findall('.//apn')]
-            plan_idx = plan_names.index(plan_name)
-
-        return country_code, provider_idx, plan_idx
+        return country_code, provider_name, plan_name
 
     def _store_defaults(self):
         country_code = self.get_country().code
