@@ -70,6 +70,47 @@ class DatabaseTest(unittest.TestCase):
         plan = db.get_plan()
         self.assertTrue(apn, plan.apn)
 
+    def test_go_through_all_options_from_xml(self):
+        db = ServiceProvidersDatabase()
+        for country_idx, country_el in enumerate(self.tree.findall('country')):
+            country_code = country_el.attrib['code']
+            db.set_country(country_idx)
+            country = db.get_country()
+            self.assertEqual(country_code, country.code)
+            provider_els = [p_el for p_el in country_el.findall('provider')
+                                 if p_el.find('.//gsm')]
+            for provider_idx, provider_el in enumerate(provider_els):
+                db.set_provider(provider_idx)
+                provider = db.get_provider()
+                self.assertEqual(provider_el.find('name').text,
+                                 provider.name)
+                plan_els = provider_el.findall('.//apn')
+                for plan_idx, plan_el in enumerate(plan_els):
+                    apn = plan_el.attrib['value']
+                    db.set_plan(plan_idx)
+                    plan = db.get_plan()
+                    if plan:
+                        self.assertEqual(apn, plan.apn)
+
+    def test_go_trough_all_combo_options(self):
+        db = ServiceProvidersDatabase()
+        countries = db.get_countries()
+        for country in countries:
+            db.set_country(country.idx)
+            new_country = db.get_country()
+            self.assertEqual(country, new_country)
+            providers = db.get_providers()
+            for provider in providers:
+                db.set_provider(provider.idx)
+                new_provider = db.get_provider()
+                self.assertEqual(provider.name, new_provider.name)
+                plans = db.get_plans()
+                for plan in plans:
+                    db.set_plan(plan.idx)
+                    new_plan = db.get_plan()
+                    self.assertEqual(plan.name, new_plan.name)
+
+
 
 if __name__ == '__main__':
     unittest.main()
