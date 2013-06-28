@@ -55,7 +55,6 @@ class MyWindow(Gtk.Window):
 
         self.country_combo = Gtk.ComboBox()
         self.country_combo.set_model(country_store)
-        self.country_combo.connect("changed", self._country_selected_cb)
         renderer_text = Gtk.CellRendererText()
         self.country_combo.pack_start(renderer_text, True)
         self.country_combo.add_attribute(renderer_text, "text", 0)
@@ -63,7 +62,6 @@ class MyWindow(Gtk.Window):
 
         self.provider_combo = Gtk.ComboBox()
         self.provider_combo.set_model(provider_store)
-        self.provider_combo.connect("changed", self._provider_selected_cb)
         renderer_text = Gtk.CellRendererText()
         self.provider_combo.pack_start(renderer_text, True)
         self.provider_combo.add_attribute(renderer_text, "text", 0)
@@ -71,7 +69,6 @@ class MyWindow(Gtk.Window):
 
         self.plan_combo = Gtk.ComboBox()
         self.plan_combo.set_model(plan_store)
-        self.plan_combo.connect("changed", self._plan_selected_cb)
         renderer_text = Gtk.CellRendererText()
         self.plan_combo.pack_start(renderer_text, True)
         self.plan_combo.add_attribute(renderer_text, "text", 0)
@@ -84,9 +81,23 @@ class MyWindow(Gtk.Window):
         else:
             countries = self.db_manager.get_countries()
             list_filler(country_store, countries)
+            providers = self.db_manager.get_providers()
+            plans = self.db_manager.get_plans()
+            provider_store = list_filler(Gtk.ListStore(str, object), providers)
+            plan_store = list_filler(Gtk.ListStore(str, object), plans)
             current_country = self.db_manager.get_country()
+            current_provider = self.db_manager.get_provider()
+            current_plan = self.db_manager.get_plan()
             self.country_combo.set_model(country_store)
             self.country_combo.set_active(current_country.idx)
+            self.provider_combo.set_model(provider_store)
+            self.provider_combo.set_active(current_provider.idx)
+            self.plan_combo.set_model(plan_store)
+            self.plan_combo.set_active(current_plan.idx)
+
+        self.country_combo.connect("changed", self._country_selected_cb)
+        self.provider_combo.connect("changed", self._provider_selected_cb)
+        self.plan_combo.connect("changed", self._plan_selected_cb)
 
     def _country_selected_cb(self, combo):
         tree_iter = combo.get_active_iter()
@@ -99,7 +110,6 @@ class MyWindow(Gtk.Window):
             current = self.db_manager.get_provider()
             self.provider_combo.set_model(store)
             self.provider_combo.set_active(current.idx)
-            print "Selected: country=%s" % country.name
 
     def _provider_selected_cb(self, combo):
         tree_iter = combo.get_active_iter()
@@ -112,12 +122,9 @@ class MyWindow(Gtk.Window):
             current = self.db_manager.get_plan()
             self.plan_combo.set_model(store)
             self.plan_combo.set_active(current.idx)
-            print "Selected: provider=%s" % provider.name
 
     def _plan_selected_cb(self, combo):
         tree_iter = combo.get_active_iter()
         if tree_iter is not None:
             model = combo.get_model()
             plan = model[tree_iter][1]
-            print "Selected: apn=%s" % plan.name
-            print "Settings: %s" % plan.__dict__
