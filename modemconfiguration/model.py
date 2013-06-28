@@ -190,10 +190,17 @@ class ServiceProvidersDatabase(object):
                 if provider.find('.//gsm')]
 
     def _get_provider_element(self):
-        return self._providers[self._current_provider]
+        if self._providers == []:
+            return None
+        else:
+            return self._providers[self._current_provider]
 
     def _get_plan_elements(self):
-        return self._get_provider_element().findall('.//apn')
+        provider_el = self._get_provider_element()
+        if provider_el is None:
+            return []
+        else:
+            return provider_el.findall('.//apn')
 
     def get_countries(self):
         return self._countries
@@ -228,8 +235,11 @@ class ServiceProvidersDatabase(object):
         return self._countries[self._current_country]
 
     def get_provider(self):
-        return Provider.from_xml(self._current_provider,
-                                 self._providers[self._current_provider])
+        if self._providers == []:
+            return None
+        else:
+            return Provider.from_xml(self._current_provider,
+                                     self._providers[self._current_provider])
 
     def get_plan(self):
         if self._plans == []:
