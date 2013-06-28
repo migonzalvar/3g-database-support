@@ -25,8 +25,12 @@ from gettext import gettext as _
 
 from gi.repository import GConf
 
-from .config import COUNTRY_CODES_PATH, PROVIDERS_PATH, PROVIDERS_FORMAT_SUPPORTED
-from .config import GCONF_SP_COUNTRY, GCONF_SP_PROVIDER, GCONF_SP_PLAN
+from .config import (COUNTRY_CODES_PATH,
+                     PROVIDERS_PATH,
+                     PROVIDERS_FORMAT_SUPPORTED,
+                     GCONF_SP_COUNTRY,
+                     GCONF_SP_PROVIDER,
+                     GCONF_SP_PLAN)
 
 
 class ServiceProviderDatabaseError(Exception):
@@ -71,17 +75,18 @@ class Plan(object):
     @classmethod
     def from_xml(cls, idx, el):
         name = _get_localized_or_default_name(el)
-        username_tag = el.find('username')
-        password_tag = el.find('password')
+        username_el = el.find('username')
+        password_el = el.find('password')
         kwargs = {
             'apn': el.get('value'),
             'name': name,
-            'username': username_tag.text if username_tag is not None else None,
-            'password': password_tag.text if password_tag is not None else None,
+            'username': username_el.text if username_el is not None else None,
+            'password': password_el.text if password_el is not None else None,
         }
         return Plan(idx, **kwargs)
 
-    def __init__(self, idx, name, apn, username=None, password=None, number=None):
+    def __init__(self, idx, name, apn, username=None, password=None,
+                 number=None):
         self.idx = idx
         self.name = name
         self.apn = apn
