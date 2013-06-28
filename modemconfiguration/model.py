@@ -151,10 +151,12 @@ class ServiceProvidersDatabase(object):
     def set_country(self, idx):
         self._current_country = idx
         self._update_providers()
+        self.set_provider(0)
 
     def set_provider(self, idx):
         self._current_provider = idx
         self._update_plans()
+        self.set_plan(0)
 
     def set_plan(self, idx):
         self._current_plan = idx
