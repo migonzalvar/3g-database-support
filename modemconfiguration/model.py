@@ -151,10 +151,12 @@ class ServiceProvidersDatabase(object):
             name = _get_localized_or_default_name(provider_el)
             if provider_name == name:
                 self.set_provider(idx)
+                break
         for idx, plan_el in enumerate(self._plans):
             name = _get_localized_or_default_name(plan_el)
             if plan_name == name:
                 self.set_plan(idx)
+                break
 
     def _get_initials(self):
         client = GConf.Client.get_default()
