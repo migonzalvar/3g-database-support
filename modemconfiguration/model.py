@@ -33,6 +33,20 @@ class ServiceProviderDatabaseError(Exception):
     pass
 
 
+def _get_localized_or_default_name(el):
+    language_code = locale.getdefaultlocale()[0]
+    LANG = language_code[0:2]
+    LANG_NS_ATTR = '{http://www.w3.org/XML/1998/namespace}lang'
+    tag = el.find('name[@%s="%s"]' % (LANG_NS_ATTR, LANG))
+    if tag is None:
+        tag = el.find('name')
+    if tag is not None:
+        name = tag.text
+    else:
+        name = _('Default')
+    return name
+
+
 class Country(object):
     def __init__(self, idx, code, name):
         self.idx = idx
@@ -41,6 +55,11 @@ class Country(object):
 
 
 class Provider(object):
+    @classmethod
+    def from_xml(cls, idx, el):
+        name = _get_localized_or_default_name(el)
+        return Provider(idx, name)
+
     def __init__(self, idx, name):
         self.idx = idx
         self.name = name
@@ -48,6 +67,19 @@ class Provider(object):
 
 class Plan(object):
     DEFAULT_NUMBER = '*99#'
+
+    @classmethod
+    def from_xml(cls, idx, el):
+        name = _get_localized_or_default_name(el)
+        username_tag = el.find('username')
+        password_tag = el.find('password')
+        kwargs = {
+            'apn': el.get('value'),
+            'name': name,
+            'username': username_tag.text if username_tag is not None else None,
+            'password': password_tag.text if password_tag is not None else None,
+        }
+        return Plan(idx, **kwargs)
 
     def __init__(self, idx, name, apn, username=None, password=None, number=None):
         self.idx = idx
@@ -170,23 +202,10 @@ class ServiceProvidersDatabase(object):
                 if provider.find('.//gsm')]
 
     def _get_provider_element(self):
-        idx = self._current_provider
-        # Warning! XPath index begins with 1
-        return self._get_country_element().find('.//provider[%s]'
-                                                % (int(idx) + 1))
+        return self._providers[self._current_provider]
 
     def _get_plan_elements(self):
         return self._get_provider_element().findall('.//apn')
-
-    def _get_localized_or_default_name(self, el):
-        tag = el.find('name[@%s="%s"]' % (self.LANG_NS_ATTR, self.LANG))
-        if tag is None:
-            tag = el.find('name')
-        if tag is not None:
-            name = tag.text
-        else:
-            name = _('Default')
-        return name
 
     def get_countries(self):
         return self._countries
@@ -194,37 +213,39 @@ class ServiceProvidersDatabase(object):
     def _update_providers(self):
         self._providers = []
         for idx, provider_el in enumerate(self._get_providers_elements()):
-            name = self._get_localized_or_default_name(provider_el)
-            provider = Provider(idx, name)
-            self._providers.append(provider)
+            self._providers.append(provider_el)
         return self._providers
 
     def get_providers(self):
-        return self._providers
+        providers = []
+        for idx, provider_el in enumerate(self._providers):
+            provider = Provider.from_xml(idx, provider_el)
+            providers.append(provider)
+        return providers
 
     def _update_plans(self):
         self._plans = []
         for idx, apn_el in enumerate(self._get_plan_elements()):
-            name = self._get_localized_or_default_name(apn_el)
-            username_tag = apn_el.find('username')
-            password_tag = apn_el.find('password')
-            plan = {
-                'apn': apn_el.get('value'),
-                'name': name,
-                'username': username_tag.text if username_tag is not None else None,
-                'password': password_tag.text if password_tag is not None else None,
-            }
-            self._plans.append(Plan(idx, **plan))
+            self._plans.append(apn_el)
         return self._plans
 
     def get_plans(self):
-        return self._plans
+        self.plans = []
+        for idx, apn_el in enumerate(self._plans):
+            plan = Plan.from_xml(idx, apn_el)
+            self.plans.append(plan)
+        return self.plans
 
     def get_country(self):
         return self._countries[self._current_country]
 
     def get_provider(self):
-        return self._providers[self._current_provider]
+        return Provider.from_xml(self._current_provider,
+                                 self._providers[self._current_provider])
 
     def get_plan(self):
-        return self._plans[self._current_plan]
+        if self._plans == []:
+            return None
+        else:
+            return Plan.from_xml(self._current_plan,
+                                 self._plans[self._current_plan])
