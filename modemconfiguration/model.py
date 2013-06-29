@@ -190,10 +190,12 @@ class ServiceProvidersDatabase(object):
     def _get_country_element(self):
         return self.root.find('country[%s]' % (self._current_country + 1))
 
-    def _get_providers_elements(self):
-        return [provider
-                for provider in self._get_country_element().findall('provider')
-                if provider.find('.//gsm')]
+    def _update_providers(self):
+        self._providers = [
+            provider
+            for provider in self._get_country_element().findall('provider')
+            if provider.find('.//gsm')]
+        return self._providers
 
     def _get_provider_element(self):
         if self._providers == []:
@@ -210,12 +212,6 @@ class ServiceProvidersDatabase(object):
 
     def get_countries(self):
         return self._countries
-
-    def _update_providers(self):
-        self._providers = []
-        for idx, provider_el in enumerate(self._get_providers_elements()):
-            self._providers.append(provider_el)
-        return self._providers
 
     def get_providers(self):
         providers = []
