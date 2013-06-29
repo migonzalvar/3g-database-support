@@ -223,11 +223,11 @@ class ServiceProvidersDatabase(object):
         return providers
 
     def get_plans(self):
-        self.plans = []
+        plans = []
         for idx, apn_el in enumerate(self._plans):
             plan = Plan.from_xml(idx, apn_el)
-            self.plans.append(plan)
-        return self.plans
+            plans.append(plan)
+        return plans
 
     def get_country(self):
         return self._countries[self._current_country]
