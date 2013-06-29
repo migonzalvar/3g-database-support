@@ -167,8 +167,3 @@ class PersistenceTest(unittest.TestCase):
         self.assertEqual(country2.code, new_country.code)
         self.assertEqual(provider2.name, new_provider.name)
         self.assertEqual(plan2.name, new_plan.name)
-
-
-
-if __name__ == '__main__':
-    unittest.main()
