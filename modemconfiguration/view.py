@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+from gettext import gettext as _
 
 from gi.repository import Gtk
 
@@ -29,13 +30,31 @@ def list_filler(gtk_list, iterable, unpacker=lambda x: (x.name, x)):
     return gtk_list
 
 
-def make_combo(store):
+def make_combo_with_label(store, label_text=''):
+    label_group = make_combo_with_label.__dict__.setdefault(
+        'label_group',
+        Gtk.SizeGroup(Gtk.SizeGroupMode.HORIZONTAL)
+    )
+    combo_group = make_combo_with_label.__dict__.setdefault(
+        'combo_group',
+        Gtk.SizeGroup(Gtk.SizeGroupMode.HORIZONTAL)
+    )
+
+    label = Gtk.Label(label_text)
+    label_group.add_widget(label)
+
     combo = Gtk.ComboBox()
+    combo_group.add_widget(combo)
     combo.set_model(store)
     renderer_text = Gtk.CellRendererText()
     combo.pack_start(renderer_text, True)
     combo.add_attribute(renderer_text, "text", 0)
-    return combo
+
+    box = Gtk.HBox()
+    box.pack_start(label, True, True, 0)
+    box.pack_start(combo, True, True, 0)
+    box.show()
+    return box, combo
 
 
 class MyWindow(Gtk.Window):
@@ -62,14 +81,16 @@ class MyWindow(Gtk.Window):
         plan_store = Gtk.ListStore(str)
         plan_store.append([])
 
-        self.country_combo = make_combo(country_store)
-        main_box.pack_start(self.country_combo, True, True, 0)
+        box, self.country_combo = make_combo_with_label(country_store,
+                                                        _('Country'))
+        main_box.pack_start(box, True, True, 0)
 
-        self.provider_combo = make_combo(provider_store)
-        main_box.pack_start(self.provider_combo, True, True, 0)
+        box, self.provider_combo = make_combo_with_label(provider_store,
+                                                         _('Provider'))
+        main_box.pack_start(box, True, True, 0)
 
-        self.plan_combo = make_combo(plan_store)
-        main_box.pack_start(self.plan_combo, True, True, 0)
+        box, self.plan_combo = make_combo_with_label(plan_store, _('Plan'))
+        main_box.pack_start(box, True, True, 0)
 
         try:
             self.db_manager = self._model.ServiceProvidersDatabase()
