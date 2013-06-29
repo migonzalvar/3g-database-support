@@ -1,8 +1,13 @@
 import unittest
 from xml.etree.cElementTree import ElementTree
 
+from mock import patch
+
 from .model import ServiceProvidersDatabase
 from .config import PROVIDERS_PATH
+from .config import (GCONF_SP_COUNTRY,
+                     GCONF_SP_PROVIDER,
+                     GCONF_SP_PLAN)
 
 
 class DatabaseTest(unittest.TestCase):
@@ -113,6 +118,55 @@ class DatabaseTest(unittest.TestCase):
                     db.set_plan(plan.idx)
                     new_plan = db.get_plan()
                     self.assertEqual(plan.name, new_plan.name)
+
+
+class FakeGConfClient(object):
+    store = {
+        GCONF_SP_COUNTRY: '',
+        GCONF_SP_PROVIDER: '',
+        GCONF_SP_PLAN: '',
+    }
+
+    def get_string(self, key):
+        return self.store[key]
+
+    def set_string(self, key, value):
+        self.store[key] = value
+        return
+
+
+class PersistenceTest(unittest.TestCase):
+    LOCALE = ('hi_IN', 'UTF-8')
+
+    def setUp(self):
+        gconf_patcher = patch('gi.repository.GConf.Client.get_default')
+        gconf_mock = gconf_patcher.start()
+        gconf_mock.return_value = FakeGConfClient()
+        self.addCleanup(gconf_patcher.stop)
+
+        locale_patcher = patch('locale.getdefaultlocale')
+        locale_mock = locale_patcher.start()
+        locale_mock.return_value = self.LOCALE
+        self.addCleanup(locale_patcher.stop)
+
+    def test_read(self):
+        default_country_code = self.LOCALE[0][3:5].lower()
+        db = ServiceProvidersDatabase()
+        country = db.get_country()
+        self.assertEqual(country.code, default_country_code)
+        db.set_country(0)
+        new_country = db.get_country()
+        new_provider = db.get_provider()
+        new_plan = db.get_plan()
+        db.save()
+
+        db2 = ServiceProvidersDatabase()
+        country2 = db2.get_country()
+        provider2 = db2.get_provider()
+        plan2 = db2.get_plan()
+        self.assertEqual(country2.code, new_country.code)
+        self.assertEqual(provider2.name, new_provider.name)
+        self.assertEqual(plan2.name, new_plan.name)
 
 
 
