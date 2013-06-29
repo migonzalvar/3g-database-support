@@ -79,12 +79,16 @@ class DatabaseTest(unittest.TestCase):
             self.assertEqual(country_code, country.code)
             provider_els = [p_el for p_el in country_el.findall('provider')
                                  if p_el.find('.//gsm')]
+            if provider_els == []:
+                self.assertIsNone(db.get_provider())
             for provider_idx, provider_el in enumerate(provider_els):
                 db.set_provider(provider_idx)
                 provider = db.get_provider()
                 self.assertEqual(provider_el.find('name').text,
                                  provider.name)
                 plan_els = provider_el.findall('.//apn')
+                if plan_els == []:
+                    self.assertIsNone(db.get_plan())
                 for plan_idx, plan_el in enumerate(plan_els):
                     apn = plan_el.attrib['value']
                     db.set_plan(plan_idx)
