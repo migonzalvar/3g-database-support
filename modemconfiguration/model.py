@@ -203,12 +203,14 @@ class ServiceProvidersDatabase(object):
         else:
             return self._providers[self._current_provider]
 
-    def _get_plan_elements(self):
+    def _update_plans(self):
+        self._plans = []
         provider_el = self._get_provider_element()
         if provider_el is None:
-            return []
+            self._plans = []
         else:
-            return provider_el.findall('.//apn')
+            self._plans = provider_el.findall('.//apn')
+        return self._plans
 
     def get_countries(self):
         return self._countries
@@ -219,12 +221,6 @@ class ServiceProvidersDatabase(object):
             provider = Provider.from_xml(idx, provider_el)
             providers.append(provider)
         return providers
-
-    def _update_plans(self):
-        self._plans = []
-        for idx, apn_el in enumerate(self._get_plan_elements()):
-            self._plans.append(apn_el)
-        return self._plans
 
     def get_plans(self):
         self.plans = []
