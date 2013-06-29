@@ -29,6 +29,15 @@ def list_filler(gtk_list, iterable, unpacker=lambda x: (x.name, x)):
     return gtk_list
 
 
+def make_combo(store):
+    combo = Gtk.ComboBox()
+    combo.set_model(store)
+    renderer_text = Gtk.CellRendererText()
+    combo.pack_start(renderer_text, True)
+    combo.add_attribute(renderer_text, "text", 0)
+    return combo
+
+
 class MyWindow(Gtk.Window):
 
     def __init__(self, model):
@@ -53,25 +62,13 @@ class MyWindow(Gtk.Window):
         plan_store = Gtk.ListStore(str)
         plan_store.append([])
 
-        self.country_combo = Gtk.ComboBox()
-        self.country_combo.set_model(country_store)
-        renderer_text = Gtk.CellRendererText()
-        self.country_combo.pack_start(renderer_text, True)
-        self.country_combo.add_attribute(renderer_text, "text", 0)
+        self.country_combo = make_combo(country_store)
         main_box.pack_start(self.country_combo, True, True, 0)
 
-        self.provider_combo = Gtk.ComboBox()
-        self.provider_combo.set_model(provider_store)
-        renderer_text = Gtk.CellRendererText()
-        self.provider_combo.pack_start(renderer_text, True)
-        self.provider_combo.add_attribute(renderer_text, "text", 0)
+        self.provider_combo = make_combo(provider_store)
         main_box.pack_start(self.provider_combo, True, True, 0)
 
-        self.plan_combo = Gtk.ComboBox()
-        self.plan_combo.set_model(plan_store)
-        renderer_text = Gtk.CellRendererText()
-        self.plan_combo.pack_start(renderer_text, True)
-        self.plan_combo.add_attribute(renderer_text, "text", 0)
+        self.plan_combo = make_combo(plan_store)
         main_box.pack_start(self.plan_combo, True, True, 0)
 
         try:
