@@ -30,33 +30,6 @@ def list_filler(gtk_list, iterable, unpacker=lambda x: (x.name, x)):
     return gtk_list
 
 
-def make_combo_with_label(store, label_text=''):
-    label_group = make_combo_with_label.__dict__.setdefault(
-        'label_group',
-        Gtk.SizeGroup(Gtk.SizeGroupMode.HORIZONTAL)
-    )
-    combo_group = make_combo_with_label.__dict__.setdefault(
-        'combo_group',
-        Gtk.SizeGroup(Gtk.SizeGroupMode.HORIZONTAL)
-    )
-
-    label = Gtk.Label(label_text)
-    label_group.add_widget(label)
-
-    combo = Gtk.ComboBox()
-    combo_group.add_widget(combo)
-    combo.set_model(store)
-    renderer_text = Gtk.CellRendererText()
-    combo.pack_start(renderer_text, True)
-    combo.add_attribute(renderer_text, "text", 0)
-
-    box = Gtk.HBox()
-    box.pack_start(label, True, True, 0)
-    box.pack_start(combo, True, True, 0)
-    box.show()
-    return box, combo
-
-
 class MyWindow(Gtk.Window):
 
     def __init__(self, model):
@@ -81,15 +54,19 @@ class MyWindow(Gtk.Window):
         plan_store = Gtk.ListStore(str)
         plan_store.append([])
 
-        box, self.country_combo = make_combo_with_label(country_store,
-                                                        _('Country'))
+        self._label_group = Gtk.SizeGroup(Gtk.SizeGroupMode.HORIZONTAL)
+        self._combo_group = Gtk.SizeGroup(Gtk.SizeGroupMode.HORIZONTAL)
+
+        box, self.country_combo = self._make_combo_with_label(country_store,
+                                                              _('Country'))
         main_box.pack_start(box, True, True, 0)
 
-        box, self.provider_combo = make_combo_with_label(provider_store,
-                                                         _('Provider'))
+        box, self.provider_combo = self._make_combo_with_label(provider_store,
+                                                               _('Provider'))
         main_box.pack_start(box, True, True, 0)
 
-        box, self.plan_combo = make_combo_with_label(plan_store, _('Plan'))
+        box, self.plan_combo = self._make_combo_with_label(plan_store,
+                                                           _('Plan'))
         main_box.pack_start(box, True, True, 0)
 
         try:
@@ -116,6 +93,24 @@ class MyWindow(Gtk.Window):
         self.country_combo.connect("changed", self._country_selected_cb)
         self.provider_combo.connect("changed", self._provider_selected_cb)
         self.plan_combo.connect("changed", self._plan_selected_cb)
+
+    def _make_combo_with_label(self, store, label_text=''):
+        label = Gtk.Label(label_text)
+        self._label_group.add_widget(label)
+
+        combo = Gtk.ComboBox()
+        self._combo_group.add_widget(combo)
+        combo.set_model(store)
+        renderer_text = Gtk.CellRendererText()
+        combo.pack_start(renderer_text, True)
+        combo.add_attribute(renderer_text, "text", 0)
+
+        box = Gtk.HBox()
+        box.pack_start(label, True, True, 0)
+        box.pack_start(combo, True, True, 0)
+        box.show()
+        return box, combo
+
 
     def _country_selected_cb(self, combo):
         tree_iter = combo.get_active_iter()
