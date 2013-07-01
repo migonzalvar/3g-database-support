@@ -44,10 +44,6 @@ class ModemConfiguration(SectionView):
         self.add(main_box)
         main_box.show()
 
-        self._upper_box = Gtk.VBox()
-        main_box.pack_start(self._upper_box, True, True, 0)
-        self._upper_box.show()
-
         country_store = Gtk.ListStore(str, object)
         country_store.append([])
 
