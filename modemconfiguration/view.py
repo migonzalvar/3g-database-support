@@ -60,14 +60,17 @@ class MyWindow(Gtk.Window):
         box, self.country_combo = self._make_combo_with_label(country_store,
                                                               _('Country'))
         main_box.pack_start(box, True, True, 0)
+        box.show()
 
         box, self.provider_combo = self._make_combo_with_label(provider_store,
                                                                _('Provider'))
         main_box.pack_start(box, True, True, 0)
+        box.show()
 
         box, self.plan_combo = self._make_combo_with_label(plan_store,
                                                            _('Plan'))
         main_box.pack_start(box, True, True, 0)
+        box.show()
 
         try:
             self.db_manager = self._model.ServiceProvidersDatabase()
@@ -107,8 +110,9 @@ class MyWindow(Gtk.Window):
 
         box = Gtk.HBox()
         box.pack_start(label, True, True, 0)
+        label.show()
         box.pack_start(combo, True, True, 0)
-        box.show()
+        combo.show()
         return box, combo
 
 
