@@ -30,10 +30,13 @@ def list_filler(gtk_list, iterable, unpacker=lambda x: (x.name, x)):
     return gtk_list
 
 
-class MyWindow(Gtk.Window):
+class SectionView(Gtk.VBox):
+    pass
 
+
+class ModemConfiguration(SectionView):
     def __init__(self, model):
-        Gtk.Window.__init__(self, title="Hello World")
+        SectionView.__init__(self)
 
         self._model = model
 
@@ -59,17 +62,17 @@ class MyWindow(Gtk.Window):
 
         box, self.country_combo = self._make_combo_with_label(country_store,
                                                               _('Country'))
-        main_box.pack_start(box, True, True, 0)
+        main_box.pack_start(box, False, False, 0)
         box.show()
 
         box, self.provider_combo = self._make_combo_with_label(provider_store,
                                                                _('Provider'))
-        main_box.pack_start(box, True, True, 0)
+        main_box.pack_start(box, False, False, 0)
         box.show()
 
         box, self.plan_combo = self._make_combo_with_label(plan_store,
                                                            _('Plan'))
-        main_box.pack_start(box, True, True, 0)
+        main_box.pack_start(box, False, False, 0)
         box.show()
 
         try:
@@ -147,3 +150,10 @@ class MyWindow(Gtk.Window):
             plan = model[tree_iter][1]
             self.db_manager.set_plan(plan.idx)
             self.db_manager.save()
+
+
+class MainWindow(Gtk.Window):
+    def __init__(self, model):
+        Gtk.Window.__init__(self, title="Main window")
+        section = ModemConfiguration(model)
+        self.add(section)
