@@ -114,9 +114,9 @@ class ModemConfiguration(SectionView):
         combo.add_attribute(renderer_text, "text", 0)
 
         box = Gtk.HBox()
-        box.pack_start(label, True, True, 0)
+        box.pack_start(label, False, True, 0)
         label.show()
-        box.pack_start(combo, True, True, 0)
+        box.pack_start(combo, False, True, 0)
         combo.show()
         return box, combo
 
