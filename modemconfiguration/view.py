@@ -108,6 +108,8 @@ class ModemConfiguration(SectionView):
         self._combo_group.add_widget(combo)
         combo.set_model(store)
         renderer_text = Gtk.CellRendererText()
+        renderer_text.set_property("max-width-chars", 25)
+        renderer_text.set_property("width-chars", 25)
         combo.pack_start(renderer_text, True)
         combo.add_attribute(renderer_text, "text", 0)
 
