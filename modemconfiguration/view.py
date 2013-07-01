@@ -61,17 +61,17 @@ class ModemConfiguration(SectionView):
         self._combo_group = Gtk.SizeGroup(Gtk.SizeGroupMode.HORIZONTAL)
 
         box, self.country_combo = self._make_combo_with_label(country_store,
-                                                              _('Country'))
+                                                              _('Country:'))
         main_box.pack_start(box, False, False, 0)
         box.show()
 
         box, self.provider_combo = self._make_combo_with_label(provider_store,
-                                                               _('Provider'))
+                                                               _('Provider:'))
         main_box.pack_start(box, False, False, 0)
         box.show()
 
         box, self.plan_combo = self._make_combo_with_label(plan_store,
-                                                           _('Plan'))
+                                                           _('Plan:'))
         main_box.pack_start(box, False, False, 0)
         box.show()
 
