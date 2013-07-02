@@ -137,6 +137,7 @@ class ServiceProvidersDatabase(object):
 
         # Populate countries list
         self._countries = self.root.findall('country')
+        self._countries.sort(key=lambda x: codes[x.attrib['code']])
         country_codes = [c_el.attrib['code'] for c_el in self._countries]
         self._country_names = [codes[code] for code in country_codes]
 
