@@ -14,10 +14,12 @@ class DatabaseTest(unittest.TestCase):
     def setUp(self):
         self.tree = ElementTree(file=PROVIDERS_PATH)
         self.countries_xml = self.tree.findall('country')
+        db = ServiceProvidersDatabase()
+        countries = db.get_countries()
+        self.codes = [country.code for country in countries]
 
     def find_country_idx(self, country_code):
-        country_xml = self.tree.find('country[@code="%s"]' % country_code)
-        return self.countries_xml.index(country_xml)
+        return self.codes.index(country_code)
 
     def test_country_list(self):
         db = ServiceProvidersDatabase()
@@ -77,8 +79,10 @@ class DatabaseTest(unittest.TestCase):
 
     def test_go_through_all_options_from_xml(self):
         db = ServiceProvidersDatabase()
-        for country_idx, country_el in enumerate(self.tree.findall('country')):
+        countries = db.get_countries()
+        for country_el in self.tree.findall('country'):
             country_code = country_el.attrib['code']
+            country_idx = self.find_country_idx(country_code)
             db.set_country(country_idx)
             country = db.get_country()
             self.assertEqual(country_code, country.code)
@@ -107,7 +111,7 @@ class DatabaseTest(unittest.TestCase):
         for country in countries:
             db.set_country(country.idx)
             new_country = db.get_country()
-            self.assertEqual(country, new_country)
+            self.assertEqual(country.code, new_country.code)
             providers = db.get_providers()
             for provider in providers:
                 db.set_provider(provider.idx)
