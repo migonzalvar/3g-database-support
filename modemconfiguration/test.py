@@ -79,7 +79,6 @@ class DatabaseTest(unittest.TestCase):
 
     def test_go_through_all_options_from_xml(self):
         db = ServiceProvidersDatabase()
-        countries = db.get_countries()
         for country_el in self.tree.findall('country'):
             country_code = country_el.attrib['code']
             country_idx = self.find_country_idx(country_code)

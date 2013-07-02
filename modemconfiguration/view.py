@@ -71,6 +71,10 @@ class ModemConfiguration(SectionView):
         main_box.pack_start(box, False, False, 0)
         box.show()
 
+        separator = Gtk.HSeparator()
+        self.add(separator)
+        separator.show()
+
         try:
             self.db_manager = self._model.ServiceProvidersDatabase()
         except ServiceProviderDatabaseError:
