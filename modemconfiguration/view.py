@@ -19,9 +19,40 @@
 from gettext import gettext as _
 
 from gi.repository import Gtk
+from gi.repository import Gdk
+from gi.repository import GObject
 
 from .model import ServiceProviderDatabaseError
 
+class Color(object):
+
+    def __init__(self, color, alpha=1.0):
+        self._r, self._g, self._b = self._html_to_rgb(color)
+        self._a = alpha
+
+    def get_gdk_color(self):
+        return Gdk.Color(int(self._r * 65535), int(self._g * 65535),
+                         int(self._b * 65535))
+
+    def _html_to_rgb(self, html_color):
+        """ #RRGGBB -> (r, g, b) tuple (in float format) """
+
+        html_color = html_color.strip()
+        if html_color[0] == '#':
+            html_color = html_color[1:]
+        if len(html_color) != 6:
+            raise ValueError('input #%s is not in #RRGGBB format' % html_color)
+
+        r, g, b = html_color[:2], html_color[2:4], html_color[4:]
+        r, g, b = [int(n, 16) for n in (r, g, b)]
+        r, g, b = (r / 255.0, g / 255.0, b / 255.0)
+
+        return (r, g, b)
+
+
+class style:
+    DEFAULT_SPACING = 15
+    COLOR_SELECTION_GREY = Color('#A6A6A6')
 
 def list_filler(gtk_list, iterable, unpacker=lambda x: (x.name, x)):
     gtk_list.clear()
