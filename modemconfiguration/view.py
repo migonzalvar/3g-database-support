@@ -71,9 +71,28 @@ class ModemConfiguration(SectionView):
 
         self._model = model
 
+        scrolled_win = Gtk.ScrolledWindow()
+        scrolled_win.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
+        self.add(scrolled_win)
+        scrolled_win.show()
+
         main_box = Gtk.VBox()
-        self.add(main_box)
+        scrolled_win.add_with_viewport(main_box)
         main_box.show()
+
+        explanation = _('You will need to provide the following information'
+                        ' to set up a mobile broadband connection to a'
+                        ' cellular (3G) network.')
+        self._text = Gtk.Label(label=explanation)
+        self._text.set_line_wrap(True)
+        self._text.set_alignment(0, 0)
+        main_box.pack_start(self._text, False, False, 0)
+        self._text.show()
+
+        upper_box = Gtk.VBox(spacing=style.DEFAULT_SPACING)
+        upper_box.set_border_width(style.DEFAULT_SPACING)
+        main_box.pack_start(upper_box, True, False, 0)
+        upper_box.show()
 
         country_store = Gtk.ListStore(str, object)
         country_store.append([])
@@ -89,21 +108,21 @@ class ModemConfiguration(SectionView):
 
         box, self.country_combo = self._make_combo_with_label(country_store,
                                                               _('Country:'))
-        main_box.pack_start(box, False, False, 0)
+        upper_box.pack_start(box, False, False, 0)
         box.show()
 
         box, self.provider_combo = self._make_combo_with_label(provider_store,
                                                                _('Provider:'))
-        main_box.pack_start(box, False, False, 0)
+        upper_box.pack_start(box, False, False, 0)
         box.show()
 
         box, self.plan_combo = self._make_combo_with_label(plan_store,
                                                            _('Plan:'))
-        main_box.pack_start(box, False, False, 0)
+        upper_box.pack_start(box, False, False, 0)
         box.show()
 
         separator = Gtk.HSeparator()
-        self.add(separator)
+        main_box.add(separator)
         separator.show()
 
         try:
