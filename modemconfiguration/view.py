@@ -272,5 +272,6 @@ class ModemConfiguration(SectionView):
 class MainWindow(Gtk.Window):
     def __init__(self, model):
         Gtk.Window.__init__(self, title="Main window")
+        self.set_default_size(640, 480)
         section = ModemConfiguration(model)
         self.add(section)
