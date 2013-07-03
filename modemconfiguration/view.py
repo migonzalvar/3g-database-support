@@ -61,6 +61,31 @@ def list_filler(gtk_list, iterable, unpacker=lambda x: (x.name, x)):
     return gtk_list
 
 
+class EntryWithLabel(Gtk.HBox):
+    __gtype_name__ = 'SugarEntryWithLabel'
+
+    def __init__(self, label_text):
+        Gtk.HBox.__init__(self, spacing=style.DEFAULT_SPACING)
+
+        self.label = Gtk.Label(label=label_text)
+        self.label.modify_fg(Gtk.StateType.NORMAL,
+                             style.COLOR_SELECTION_GREY.get_gdk_color())
+        self.label.set_alignment(1, 0.5)
+        self.pack_start(self.label, False, True, 0)
+        self.label.show()
+
+        self._entry = Gtk.Entry()
+        self._entry.set_max_length(25)
+        self._entry.set_width_chars(25)
+        self.pack_start(self._entry, False, True, 0)
+        self._entry.show()
+
+    def get_entry(self):
+        return self._entry
+
+    entry = GObject.property(type=object, getter=get_entry)
+
+
 class SectionView(Gtk.VBox):
     pass
 
@@ -149,6 +174,46 @@ class ModemConfiguration(SectionView):
         self.country_combo.connect("changed", self._country_selected_cb)
         self.provider_combo.connect("changed", self._provider_selected_cb)
         self.plan_combo.connect("changed", self._plan_selected_cb)
+
+        lower_box = Gtk.VBox(spacing=style.DEFAULT_SPACING)
+        lower_box.set_border_width(style.DEFAULT_SPACING)
+        main_box.pack_start(lower_box, True, False, 0)
+        lower_box.show()
+
+        self._username_entry = EntryWithLabel(_('Username:'))
+        # self._username_entry.entry.connect('changed', self.__entry_changed_cb)
+        self._label_group.add_widget(self._username_entry.label)
+        self._combo_group.add_widget(self._username_entry.entry)
+        lower_box.pack_start(self._username_entry, False, True, 0)
+        self._username_entry.show()
+
+        self._password_entry = EntryWithLabel(_('Password:'))
+        # self._password_entry.entry.connect('changed', self.__entry_changed_cb)
+        self._label_group.add_widget(self._password_entry.label)
+        self._combo_group.add_widget(self._password_entry.entry)
+        lower_box.pack_start(self._password_entry, False, True, 0)
+        self._password_entry.show()
+
+        self._number_entry = EntryWithLabel(_('Number:'))
+        # self._number_entry.entry.connect('changed', self.__entry_changed_cb)
+        self._label_group.add_widget(self._number_entry.label)
+        self._combo_group.add_widget(self._number_entry.entry)
+        lower_box.pack_start(self._number_entry, False, True, 0)
+        self._number_entry.show()
+
+        self._apn_entry = EntryWithLabel(_('Access Point Name (APN):'))
+        # self._apn_entry.entry.connect('changed', self.__entry_changed_cb)
+        self._label_group.add_widget(self._apn_entry.label)
+        self._combo_group.add_widget(self._apn_entry.entry)
+        lower_box.pack_start(self._apn_entry, False, True, 0)
+        self._apn_entry.show()
+
+        self._pin_entry = EntryWithLabel(_('Personal Identity Number (PIN):'))
+        # self._pin_entry.entry.connect('changed', self.__entry_changed_cb)
+        self._label_group.add_widget(self._pin_entry.label)
+        self._combo_group.add_widget(self._pin_entry.entry)
+        lower_box.pack_start(self._pin_entry, False, True, 0)
+        self._pin_entry.show()
 
     def _make_combo_with_label(self, store, label_text=''):
         label = Gtk.Label(label_text)
